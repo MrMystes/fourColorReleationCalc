@@ -23,3 +23,8 @@ eg: 一个polygon [[120.31, 31.31], [121.31, 31.31], [121.31, 30.31], [120.31, 3
     // answer就是一个数组，类似于这样的形式，[1,2,2,3,4,1,2,3]; （1，2，3，4）代表上色的次序
     const answer = calcReleations(matrix);
 ```
+## emample
+
+https://mrmystes.github.io/
+
+![](/assets/example.png)
