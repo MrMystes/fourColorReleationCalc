@@ -1,0 +1,22 @@
+{
+  "name": "four-color-releation-calc",
+  "version": "1.0.0",
+  "description": "calc four color releation",
+  "main": "index.js",
+  "repository": "git@github.com:MrMystes/fourColorReleationCalc.git",
+  "author": "Mystes <mrmystes@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "rollup -c",
+    "test": "jest"
+  },
+  "dependencies": {
+    "rollup": "^2.21.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "babel-jest": "^26.1.0",
+    "jest": "^26.1.0"
+  }
+}
