@@ -1,6 +1,6 @@
 {
   "name": "four-color-releation-calc",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "calc four color releation",
   "main": "dist/bundle.js",
   "repository": "git@github.com:MrMystes/fourColorReleationCalc.git",
