@@ -2,7 +2,7 @@
   "name": "four-color-releation-calc",
   "version": "1.0.1",
   "description": "calc four color releation",
-  "main": "index.js",
+  "main": "dist/bundle.js",
   "repository": "git@github.com:MrMystes/fourColorReleationCalc.git",
   "author": "Mystes <mrmystes@gmail.com>",
   "license": "MIT",
