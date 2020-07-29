@@ -1,8 +1,9 @@
 import { buildGraphMatrix } from './buildGraphMatrix';
 import { calcFourColorReleation } from './fourColorCaclculate';
 
-const calcReleations = function(coordinates) {
-	return calcFourColorReleation(buildGraphMatrix(coordinates));
+const calcReleations = async function(coordinates) {
+	const matrix = await buildGraphMatrix(coordinates);
+	return calcFourColorReleation(matrix);
 };
 
 export {

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script type="module">
+    // import coordinates from './coordinates.json';
+    import { buildGraphMatrix, calcFourColorReleation } from '../dist/index.js'
+    fetch('./xzjb1-coordinates.json').then(res => res.json()).then(coordinates => {
+        console.log('coordinates', coordinates);
+        console.time('buildGraphMatrix')
+        buildGraphMatrix(coordinates).then(matrix => {
+            console.timeEnd('buildGraphMatrix');
+            console.time('calcFourColorReleation');
+            console.log(matrix);
+            const answer = calcFourColorReleation(matrix);
+            console.log(answer);
+            console.timeEnd('calcFourColorReleation')
+        })
+        // 
+    })
+   
+</script>
+</html>

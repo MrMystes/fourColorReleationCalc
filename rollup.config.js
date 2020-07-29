@@ -1,7 +1,10 @@
+import OMT from "@surma/rollup-plugin-off-main-thread";
+
 export default {
     input: 'src/index.js',
     output: {
-      file: 'dist/bundle.js',
-      format: 'cjs'
-    }
+      dir: 'dist',
+      format: 'esm'
+    },
+    plugins: [OMT()]
   };

@@ -153,6 +153,22 @@ function segmentsIntersect(seg1, seg2) {
   return intersection;
 }
 
+function transformPointArrayToPointXY(polygonLinearRings) {
+  return polygonLinearRings.map(point => {
+    return {
+      x: point[0],
+      y: point[1]
+    };
+  });
+}
+
+function intersectsPolygonAndPolygon(
+  polygon1LinearRings,
+  polygon2LinearRings
+) {
+  return intersectsByPolygon(polygon1LinearRings, polygon2LinearRings);
+}
+
 export function intersectsPolygonAndPolygon(
   polygon1LinearRings,
   polygon2LinearRings
