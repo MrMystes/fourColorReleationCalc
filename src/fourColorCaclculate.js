@@ -1,4 +1,4 @@
-export const calcFourColorReleation = function (matrix) {
+export const calcFourColorReleation = function (matrix, task) {
 	const candiateColors = [1, 2, 3, 4];
 	const len = matrix.length;
 	// 用于存储解
@@ -35,9 +35,11 @@ export const calcFourColorReleation = function (matrix) {
 		const curCandiateColorsIndex = track[i]++;
 		if (curCandiateColors.length > 0 && curCandiateColorsIndex < curCandiateColors.length) {
 			answer.push(curCandiateColors[curCandiateColorsIndex]);
+			task && task('render', matrixWeight[i].idx, answer[i])
 			i++;
 			track[i] = 0;
 		} else {
+			task && task('clear', i, answer[i])
 			i--;
 			answer.pop();
 		}

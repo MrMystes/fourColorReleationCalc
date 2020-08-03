@@ -1,6 +1,5 @@
 import DynamicWorker from './dynamicWorker';
-
-function messageHandler({ payload, row, col }) {
+function messageHandler(data) {
 	function intersectsByPolygon(polygon1LinearRings, polygon2LinearRings) {
 		let intersect = false;
 
@@ -172,8 +171,7 @@ function messageHandler({ payload, row, col }) {
 		return intersectsByPolygon(polygon1LinearRings, polygon2LinearRings);
 	}
 
-
-	let result = [];
+	const {payload, col, row} = data;
 	const [polygon1, polygon2] = payload;
 	const p1 = transformPointArrayToPointXY(polygon1[0]);
 	const p2 = transformPointArrayToPointXY(polygon2[0])
@@ -185,7 +183,7 @@ function messageHandler({ payload, row, col }) {
 }
 
 const workerPool = new Map();
-const maxThread = 6;
+const maxThread = navigator.hardwareConcurrency;
 
 export const buildGraphMatrix = function (coordinates) {
 	let len = coordinates.length;
@@ -194,22 +192,24 @@ export const buildGraphMatrix = function (coordinates) {
 		matrix[row][col] = res;
 	}
 
-	let coordinatePairs = []
+	let coordinatePairs = [];
 	for (let i = 0; i < len - 1; i++) {
 		for (let j = i + 1; j < len; j++) {
 			coordinatePairs.push({
 				payload: [coordinates[i], coordinates[j]],
 				row: i,
 				col: j
-			})
+			});
 		}
 	}
+
 	const wrapper = (query, uuid, poolIdx) => {
-		return query.then(res => {
-			storeResult(res);
+		return query.then(result => {
+			storeResult(result);
 			return { uuid, poolIdx }
 		})
 	}
+	
 	const workerRunningPool = coordinatePairs.slice(0, maxThread).map((data, index) => {
 		const worker = new DynamicWorker(messageHandler);
 		workerPool.set(worker.uuid, worker)

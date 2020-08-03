@@ -18,7 +18,6 @@ class DynamicWorker {
      * 内部 onmessage 处理
      */
     const onMessageHandlerFn = `self.onmessage = ({ data: { data, flag, coverage } }) => {
-      console.log('Message received from main script');
       if (data) {
         const result = formatFn(typeof data === 'string' ? JSON.parse(data) : data)
         self.postMessage({
@@ -26,8 +25,6 @@ class DynamicWorker {
           flag
         });
       }
-
-      console.log('Posting message back to main script');
     }`;
 
     /**
@@ -72,7 +69,7 @@ class DynamicWorker {
   }
 }
 
-function messageHandler({ payload, row, col }) {
+function messageHandler(data) {
 	function intersectsByPolygon(polygon1LinearRings, polygon2LinearRings) {
 		let intersect = false;
 
@@ -243,6 +240,8 @@ function messageHandler({ payload, row, col }) {
 	) {
 		return intersectsByPolygon(polygon1LinearRings, polygon2LinearRings);
 	}
+
+	const {payload, col, row} = data;
 	const [polygon1, polygon2] = payload;
 	const p1 = transformPointArrayToPointXY(polygon1[0]);
 	const p2 = transformPointArrayToPointXY(polygon2[0]);
@@ -254,7 +253,7 @@ function messageHandler({ payload, row, col }) {
 }
 
 const workerPool = new Map();
-const maxThread = 12;
+const maxThread = navigator.hardwareConcurrency;
 
 const buildGraphMatrix = function (coordinates) {
 	let len = coordinates.length;
@@ -273,12 +272,14 @@ const buildGraphMatrix = function (coordinates) {
 			});
 		}
 	}
+
 	const wrapper = (query, uuid, poolIdx) => {
-		return query.then(res => {
-			storeResult(res);
+		return query.then(result => {
+			storeResult(result);
 			return { uuid, poolIdx }
 		})
 	};
+	
 	const workerRunningPool = coordinatePairs.slice(0, maxThread).map((data, index) => {
 		const worker = new DynamicWorker(messageHandler);
 		workerPool.set(worker.uuid, worker);
@@ -309,7 +310,7 @@ const buildGraphMatrix = function (coordinates) {
 	})
 };
 
-const calcFourColorReleation = function (matrix) {
+const calcFourColorReleation = function (matrix, task) {
 	const candiateColors = [1, 2, 3, 4];
 	const len = matrix.length;
 	// 用于存储解
@@ -346,9 +347,11 @@ const calcFourColorReleation = function (matrix) {
 		const curCandiateColorsIndex = track[i]++;
 		if (curCandiateColors.length > 0 && curCandiateColorsIndex < curCandiateColors.length) {
 			answer.push(curCandiateColors[curCandiateColorsIndex]);
+			task && task('render', matrixWeight[i].idx, answer[i]);
 			i++;
 			track[i] = 0;
 		} else {
+			task && task('clear', i, answer[i]);
 			i--;
 			answer.pop();
 		}

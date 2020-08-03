@@ -1,30 +1,133 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-<script type="module">
-    // import coordinates from './coordinates.json';
-    import { buildGraphMatrix, calcFourColorReleation } from '../dist/index.js'
-    fetch('./xzjb1-coordinates.json').then(res => res.json()).then(coordinates => {
-        console.log('coordinates', coordinates);
-        console.time('buildGraphMatrix')
-        buildGraphMatrix(coordinates).then(matrix => {
-            console.timeEnd('buildGraphMatrix');
-            console.time('calcFourColorReleation');
-            console.log(matrix);
-            const answer = calcFourColorReleation(matrix);
-            console.log(answer);
-            console.timeEnd('calcFourColorReleation')
-        })
-        // 
-    })
-   
-</script>
+<html lang="en" style="width: 100vw;height: 100vh">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<script src="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.js"></script>
+		<link
+			href="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css"
+			rel="stylesheet"
+		/>
+		<title>Document</title>
+	</head>
+	<body style="height: 100%;width: 100%;margin: 0;">
+		<div id="map" style="height: 100%;width: 100%"></div>
+	</body>
+
+	<script type="module">
+		import { buildGraphMatrix, calcFourColorReleation } from '../dist/index.js';
+
+		fetch('./xzjb1-coordinates.json')
+			.then(res => res.json())
+			.then(coordinates => {
+				window.mapboxgl.accessToken =
+					'pk.eyJ1IjoibXlzdGVzMDciLCJhIjoiY2tjaHF1MzZoMHljMTJybnFzOTl1ZTI5byJ9.BedxcCR4az66JS8V-a0qjQ';
+				const map = new window.mapboxgl.Map({
+					container: 'map',
+					style: 'mapbox://styles/mapbox/streets-v11',
+					center: [120.31, 31.69], // starting position [lng, lat]
+					zoom: 6
+				});
+
+				map.on('load', async () => {
+					const colors = ['#eb4b3e', '#46af0e', '#e09010', '#395fdc'];
+					const layerIds = [];
+					let i = 0;
+					const task = (type, idx, colorIdx) => {
+						if (type === 'render') {
+							setTimeout(_ => {
+								render(idx, colorIdx)
+							}, i * 500)
+						} else {
+							setTimeout(_ => {
+								clear()
+							}, i * 500)
+						}
+						i++;
+					}
+					const render = (idx, colorIdx) => {
+						const layerId = `layer-${idx}`;
+						layerIds.push(layerId);
+						const coordinate = coordinates[idx];
+
+						const features = [
+							{
+								type: 'Feature',
+								geometry: {
+									type: 'Polygon',
+									coordinates: coordinate
+								},
+								properties: {
+									'fill-color': colors[colorIdx - 1]
+										? colors[colorIdx - 1]
+										: '#000',
+									'fill-opacity': 0.6
+								}
+							}
+						];
+						map.addLayer({
+							id: layerId,
+							type: 'fill',
+							source: {
+								type: 'geojson',
+								data: {
+									type: 'FeatureCollection',
+									features
+								}
+							},
+							paint: {
+								'fill-opacity': 0.6,
+								// Use a get expression (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-get)
+								// to set the line-color to a feature property value.
+								'fill-color': ['get', 'fill-color']
+							}
+						});
+					};
+					const clear = idx => {
+						const layerId = layerIds.pop();
+						map.removeLayer(layerId);
+					};
+					// const matrix = await buildGraphMatrix(coordinates);
+					const matrix = [[0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,1,0,1,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],[0,0,1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0],[0,0,1,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,1,0,0,1,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,1,1,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,1,0,1,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,1,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0],[0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,0,1,0,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,1,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
+					const answer = calcFourColorReleation(
+						matrix,
+						task
+					);
+					
+					/* const features = coordinates.map((coordinate, index) => {
+						return {
+							type: 'Feature',
+							geometry: {
+								type: 'Polygon',
+								coordinates: coordinate
+							},
+							properties: {
+								'fill-color': colors[answer[index] - 1]
+									? colors[answer[index] - 1]
+									: '#000',
+								'fill-opacity': 0.6
+							}
+						};
+					});
+					map.addLayer({
+						id: 'maine',
+						type: 'fill',
+						source: {
+							type: 'geojson',
+							data: {
+								type: 'FeatureCollection',
+								features
+							}
+						},
+						paint: {
+							'fill-opacity': 0.6,
+							// Use a get expression (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-get)
+							// to set the line-color to a feature property value.
+							'fill-color': ['get', 'fill-color']
+						}
+					}); */
+				});
+			});
+	</script>
 </html>

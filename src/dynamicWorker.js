@@ -18,7 +18,6 @@ class DynamicWorker {
      * 内部 onmessage 处理
      */
     const onMessageHandlerFn = `self.onmessage = ({ data: { data, flag, coverage } }) => {
-      console.log('Message received from main script');
       if (data) {
         const result = formatFn(typeof data === 'string' ? JSON.parse(data) : data)
         self.postMessage({
@@ -26,8 +25,6 @@ class DynamicWorker {
           flag
         });
       }
-
-      console.log('Posting message back to main script');
     }`;
 
     /**
